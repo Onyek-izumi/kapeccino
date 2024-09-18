@@ -82,13 +82,13 @@ module.exports = {
         // Output the commands by category
         let output = '';
         for (const category in commandsByCategory) {
-            output += `╭───────────\n│ 『 *{category.toUpperCase()} 』\n`;
+            output += `╭───────────\n│ 『 ${category.toUpperCase()} 』\n`;
             output += `│ ${commandsByCategory[category].map(cmd => `• *{cmd}`).join('\n│ ')}\n`;
             output += `╰────────────\n`;
         }
 
         // Add the header and footer
-        output = `╔═══════════╗\n     Izumi miyamura\n╚═══════════╝\n*{output}𝗧𝘆𝗽𝗲 *𝗵𝗲𝗹𝗽 𝗰𝗺𝗱𝗡𝗮𝗺𝗲 𝘁𝗼 𝘃𝗶𝗲𝘄 𝘁𝗵𝗲 𝗱𝗲𝘁𝗮𝗶𝗹𝘀 𝗼𝗳 𝘁𝗵𝗮𝘁 𝗰𝗼𝗺𝗺𝗮𝗻𝗱\nThank you for being with us for a year! Happy New Year Izumi miyamura users!\n`;
+        output = `╔═══════════╗\n     Izumi miyamura\n╚═══════════╝\n${output}𝗧𝘆𝗽𝗲 *𝗵𝗲𝗹𝗽 𝗰𝗺𝗱𝗡𝗮𝗺𝗲 𝘁𝗼 𝘃𝗶𝗲𝘄 𝘁𝗵𝗲 𝗱𝗲𝘁𝗮𝗶𝗹𝘀 𝗼𝗳 𝘁𝗵𝗮𝘁 𝗰𝗼𝗺𝗺𝗮𝗻𝗱\nThank you for being with us for a year! Happy New Year Izumi miyamura users!\n`;
 
         // Output or send the 'output' string as needed
         message.reply(output);
