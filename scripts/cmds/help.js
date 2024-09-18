@@ -1,122 +1,96 @@
-const commandInfoMap = {
-  ai: {
-    name: "ai",
-    description: "AI Based on GPT-4",
-    guide: "%1ai what is life?"
-  },
-  alldl: {
-    name: "alldl",
-    description: "Download video content using link from Facebook, Instagram, Tiktok, Youtube, Twitter, and Spotify audio",
-    guide: "%1alldl [link]"
-  },
-  dalle: {
-    name: "dalle",
-    description: "Create images through text",
-    guide: "%1dalle cat in a hoodie"
-  },
-  help: {
-    name: "help",
-    description: "View all commands",
-    guide: "%1help\n%1help <command name>"
-  },
-  lyrics: {
-    name: "lyrics",
-    description: "Fetches lyrics of a song",
-    guide: "%1lyrics perfect by ed sheeran"
-  },
-  pinterest: {
-    name: "pinterest",
-    description: "Searches images on Pinterest",
-    guide: "%1pinterest cat -10"
-  },
-  prefix: {
-    name: "prefix",
-    description: "View some commands and show bot's prefix",
-    guide: "%1prefix"
-  },
-  remini: {
-    name: "remini",
-    description: "Enhances your image to lessen the blur",
-    guide: "Reply to an image and type %1remini"
-  },
-  removebg: {
-    name: "removebg",
-    description: "Remove background of an image",
-    guide: "Reply to an image and type %1removebg or %1rbg"
-  },
-  spotify: {
-    name: "spotify",
-    description: "Play song from Spotify",
-    guide: "%1spotify <song title> <artist>\nExample:\n%1spotify perfect by ed sheeran"
-  },
-  tempmail: {
-    name: "tempmail",
-    description: "Get temporary emails and their inbox messages",
-    guide: "%1tempmail create\n%1tempmail inbox <email>"
-  },
-  translate: {
-    name: "translate",
-    description: "Translate to any language",
-    guide: "Reply to the text you want to translate and type\n%1translate <language>"
-  },
-  unsend: {
-    name: "unsend",
-    description: "Deletes bot messages",
-    guide: "Reply to a bot message and type %1unsend"
-  },
-  uptime: {
-    name: "uptime",
-    description: "See how long the bot has been running",
-    guide: "%1uptime"
-  }
-};
+
+
+const fs = require("fs-extra");
+const axios = require("axios");
+const path = require("path");
+const { getPrefix } = global.utils;
+const { commands, aliases } = global.GoatBot;
+const doNotDelete = "[ 🔥 | Uzuki Mikata Reborn]";
+
+// Function to generate command details
+async function getCommandDetails(commandName, langCode) {
+    // Fetch details of a specific command based on its name
+    const command = commands.get(commandName);
+    if (!command) {
+        return 'Command not found.';
+    }
+
+    // Customize the command details message based on language
+    // You can access properties like command.config.name, command.config.shortDescription, etc., to display details
+
+    return `Command Name: ${command.config.name}\nDescription: ${command.config.shortDescription[langCode]}`;
+}
 
 module.exports = {
-  config: {
-    name: "help",
-    aliases: ["help"],
-    version: 1.0,
-    author: "LiANE&Coffee",
-    shortDescription: { en: "View all commands" },
-    category: "members",
-  },
-  onStart: async function({ message, args }) {
-    const prefix = global.GoatBot.config.prefix; // Access the global prefix
+    config: {
+        name: "help",
+        version: "1.17",
+        author: "NTKhang",
+        countDown: 5,
+        role: 0,
+        shortDescription: {
+            vi: "Xem cách dùng lệnh",
+            en: "View command usage"
+        },
+        longDescription: {
+            vi: "Xem cách sử dụng của các lệnh",
+            en: "View command usage"
+        },
+        category: "info",
+        guide: {
+            vi: "  {pn} [để trống | <số trang> | <tên lệnh>]"
+        },
+        priority: 1
+    },
 
-    if (args[0]) {
-      const command = args[0].toLowerCase();
-      if (commandInfoMap[command]) {
-        const { name, description, guide } = commandInfoMap[command];
-        const response = `━━━━━━━━━━━━━━━━\n𝙲𝚘𝚖𝚖𝚊𝚗𝚍 𝙽𝚊𝚖𝚎: ${name}\n𝙳𝚎𝚜𝚌𝚛𝚒𝚙𝚝𝚒𝚘𝚗: ${description}\n𝙶𝚞𝚒𝚍𝚎: ${guide.replace(/%1/g, prefix)}\n━━━━━━━━━━━━━━━━`;
-        return message.reply(response);
-      } else {
-        return message.reply("Command not found.");
-      }
-    } else {
-      const commandsList = `━━━━━━━━━━━━━━━━
-𝙰𝚟𝚊𝚒𝚕𝚊𝚋𝚕𝚎 𝙲𝚘𝚖𝚖𝚊𝚗𝚍𝚜:
-╭─╼━━━━━━━━╾─╮
-│ %1 Ai
-│ %1 Alldl
-│ %1 Dalle
-│ %1 Help
-│ %1 Lyrics
-│ %1 Pinterest
-│ %1 Prefix
-│ %1 Remini
-│ %1 Removebg
-│ %1 Tempmail
-│ %1 Translate
-│ %1 Unsend
-│ %1 Uptime
-╰─━━━━━━━━━╾─╯
-%1help <command name>
-𝚃𝚘 𝚜𝚎𝚎 𝚑𝚘𝚠 𝚝𝚘 𝚞𝚜𝚎 𝚊𝚟𝚊𝚒𝚕𝚊𝚋𝚕𝚎 𝚌𝚘𝚖𝚖𝚊𝚗𝚍𝚜.
+    langs: {},
 
-Example: %1help ai
-━━━━━━━━━━━━━━━━`;
+    onStart: async function ({ message, args, event, threadsData, getLang, role }) {
+        const langCode = await threadsData.get(event.threadID, "data.lang") || global.GoatBot.config.language;
+        let customLang = {};
+        const pathCustomLang = path.normalize(`${process.cwd()}/languages/cmds/${langCode}.js`);
+        if (fs.existsSync(pathCustomLang))
+            customLang = require(pathCustomLang);
 
-      return message.reply(commandsList.replace(/%1/g, prefix));
+        const { threadID } = event;
+        const threadData = await threadsData.get(threadID);
+        const prefix = getPrefix(threadID);
+
+        // Retrieve the commands by category
+        const commandsByCategory = {};
+
+        for (const [, value] of commands) {
+            const category = value.config.category || 'OTHER'; // Default category if not specified
+            if (!commandsByCategory[category]) {
+                commandsByCategory[category] = [];
+            }
+            commandsByCategory[category].push(value.config.name);
+        }
+
+        // Sort the commands alphabetically within each category
+        for (const category in commandsByCategory) {
+            commandsByCategory[category].sort();
+        }
+
+        // Check if a specific command is requested
+        const requestedCommand = args.join(' ').toLowerCase();
+        if (requestedCommand) {
+            const commandDetails = await getCommandDetails(requestedCommand, langCode);
+            return message.reply(commandDetails);
+        }
+
+        // Output the commands by category
+        let output = '';
+        for (const category in commandsByCategory) {
+            output += `╭───────────\n│ 『 *{category.toUpperCase()} 』\n`;
+            output += `│ ${commandsByCategory[category].map(cmd => `• *{cmd}`).join('\n│ ')}\n`;
+            output += `╰────────────\n`;
+        }
+
+        // Add the header and footer
+        output = `╔═══════════╗\n     Izumi miyamura\n╚═══════════╝\n*{output}𝗧𝘆𝗽𝗲 *𝗵𝗲𝗹𝗽 𝗰𝗺𝗱𝗡𝗮𝗺𝗲 𝘁𝗼 𝘃𝗶𝗲𝘄 𝘁𝗵𝗲 𝗱𝗲𝘁𝗮𝗶𝗹𝘀 𝗼𝗳 𝘁𝗵𝗮𝘁 𝗰𝗼𝗺𝗺𝗮𝗻𝗱\nThank you for being with us for a year! Happy New Year Izumi miyamura users!\n`;
+
+        // Output or send the 'output' string as needed
+        message.reply(output);
     }
-  }
 };
